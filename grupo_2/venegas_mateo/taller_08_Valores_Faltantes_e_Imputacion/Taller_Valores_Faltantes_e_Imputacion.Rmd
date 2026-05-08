@@ -3,16 +3,51 @@ title: "Taller Valores Faltantes e Imputacion"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+# Ejercicio 1: Diagnóstico de Valores Faltantes
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+Dado el siguiente conjunto de datos simulado en R, responde las preguntas analíticas:
 
 ```{r}
-plot(cars)
+set.seed(42)
+n <- 200
+datos <- data.frame(
+  edad    = c(sample(18:65, 160), rep(NA, 40)),
+  ingreso = c(rnorm(100, 3e6, 5e5), rep(NA, 100)),
+  ciudad  = sample(c("Bogotá","Medellín","Cali", NA), n, replace = TRUE,
+                   prob = c(0.4, 0.3, 0.2, 0.1)),
+  compra  = rbinom(n, 1, 0.5)
+)
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+1.  Calcula el porcentaje de faltantes por variable con colMeans()is,na(datos)).
+2.  ¿Cuantes filas tienen al menos un NA? Usa sum(!complete.cases(datos)).
+3.  Visualiza el patrón con naniar::gg_miss_var(datos) y visdat : : vis_miss(datos).
+4.  Clasifica el mecanismo probable (MCAR, MAR o MNAR) para ingreso y edad. Justifica tu respuesta.
+5.  Imputa edad con la mediana e ingreso con la media. ¿Cambia la distribución? Compara con summary() antes y despues.
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+# Ejercicio 2: Pipeline reproducible con recipes
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+Construye un pipeline de imputación correcto que evite fuga de información
+
+```{r}
+library(tidymodels)
+
+# Separa datos
+set.seed(123)
+split <- initial_split(datos, prop = 0.75)
+train <- training(split)
+test  <- testing(split)
+
+# Tu tarea: completa el pipeline
+receta <- recipe(compra ~ ., data = train) |>
+  step_impute_median(___) |>   # imputa numéricas
+  step_impute_mode(___)  |>    # imputa categóricas
+  prep()
+
+train_proc <- bake(receta, new_data = train)
+test_proc  <- bake(receta, new_data = test)
+```
+
+1.  Calcula el porcentaje de faltantes por variable con colMeans()is,na(datos)).
+2.  ¿Cuantes filas tienen al menos un NA? Usa sum(!complete.cases(datos)).
+3.  Visualiza el patrón con naniar::gg_miss_var(datos) y visdat : : vis_miss(datos).

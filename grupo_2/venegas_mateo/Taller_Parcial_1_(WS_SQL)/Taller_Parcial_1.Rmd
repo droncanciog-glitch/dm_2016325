@@ -1,0 +1,270 @@
+---
+title: "Taller 1: Web Scraping y SQL"
+author: "Mateo Venegas Clavijo - 1075878496"
+output:
+  html_document:
+    theme: flatly
+    toc: yes
+---
+
+# Taller / Parcial 1 - Minería de Datos
+
+## Mateo Venegas Clavijo - CC. 1075878496
+
+### 1. Introducción:
+
+El presente trabajo es la aplicación directa de los conocimientos
+obtenidos en las primeras clases del curso de Minería de Datos,
+corrrespondientes a Web Scraping y Bases de datos y consultas de SQL.
+
+Para ello, se seleccionó de manera inicial la revista estadounidense Q1:
+"Foundations and Trends in Machine Learning" dado que al tratarse de una
+subclasificación en el area de la ciencia de datos y aprendizaje
+automatico, los temas y articulos alli abordados tendrian que ver
+directamente con las categorías.
+
+De manera adicional, se caracterizo a la revista como una fuente
+confiable de datos al tratarse del Q1, y la estructura de la pagina web
+que poseia. Estos fueron factores decisivos para escogerla.
+
+### 2. Fuente de datos y scraping:
+
+Página usadas: Journal of Artificial Intelligente Research <https://www.jair.org/index.php/jair>
+
+Volúmenes del año 2025:
+
+Volúmen 82: "https://www.jair.org/index.php/jair/issue/view/1171"
+Volúmen 83: "https://www.jair.org/index.php/jair/issue/view/1172"
+Volúmen 84: "https://www.jair.org/index.php/jair/issue/view/1173"
+
+
+##### 2.1. Paquetes que usaremos
+
+Estrategia de extracción: Extracción convencional para el rango de 2025 hasta 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk $set(echo = TRUE, warning = FALSE, message = FALSE)
+library(rvest)
+library(tidyverse)
+library(RSQLite)
+library(DBI)
+library(httr)
+library(jsonlite)
+```
+
+# Web Scraping
+
+##### 2.2. Leer la pagina web
+
+```{r scraping}
+# URLs de los volúmenes 82, 83 y 84 (año 2025)
+urls_volumenes_2025 <- c(
+  "https://www.jair.org/index.php/jair/issue/view/1171",  # Vol. 82
+  "https://www.jair.org/index.php/jair/issue/view/1172",  # Vol. 83
+  "https://www.jair.org/index.php/jair/issue/view/1173"   # Vol. 84
+)
+
+# Paso 1: Recolectar todos los enlaces de artículos de los tres volúmenes
+enlaces_articulos <- c()
+for (vol_url in urls_volumenes_2025) {
+  pag <- tryCatch(read_html(vol_url), error = function(e) NULL)
+  Sys.sleep(0.5)
+  if (!is.null(pag)) {
+    links <- pag %>% html_nodes("a") %>% html_attr("href")
+    articulos <- unique(links[
+      grepl("^https://www.jair.org/index.php/jair/article/view/\\d+$", links)
+    ])
+    enlaces_articulos <- c(enlaces_articulos, articulos)
+  }
+}
+enlaces_articulos <- unique(enlaces_articulos)
+
+# Paso 2: Crear el dataframe
+papers_df <- tibble(
+  journal_name     = character(),
+  title            = character(),
+  publication_date = character(),
+  year             = numeric(),
+  doi              = character(),
+  url              = character(),
+  abstract         = character(),
+  authors_raw      = character(),
+  n_authors        = numeric(),
+  citations        = numeric(),
+  n_references     = numeric()
+)
+
+# Paso 3: Iterar sobre cada artículo
+# - Metadatos: scraping directo de la página del artículo (meta tags OJS)
+# - citations y n_references: API de OpenAlex
+for (link in enlaces_articulos) {
+  Sys.sleep(0.8)
+  page_art <- tryCatch(read_html(link), error = function(e) NULL)
+
+  if (!is.null(page_art)) {
+    t       <- page_art %>% html_node("meta[name='citation_title']")   %>% html_attr("content")
+    d       <- page_art %>% html_node("meta[name='citation_date']")    %>% html_attr("content")
+    doi_val <- page_art %>% html_node("meta[name='citation_doi']")     %>% html_attr("content")
+    auths   <- page_art %>% html_nodes("meta[name='citation_author']") %>% html_attr("content")
+    abstr   <- page_art %>% html_node(".article-abstract")             %>% html_text(trim = TRUE)
+    abstr   <- gsub("^Abstract\\s*", "", ifelse(is.null(abstr), NA_character_, abstr))
+
+    # Consultar OpenAlex por DOI para obtener citas y referencias
+    citas_val <- NA_real_
+    refs_val  <- NA_real_
+    if (!is.na(doi_val)) {
+      oa <- tryCatch(
+        GET(paste0("https://api.openalex.org/works/https://doi.org/", doi_val),
+            add_headers(`User-Agent` = "JAIR-Scraper/1.0")),
+        error = function(e) NULL
+      )
+      if (!is.null(oa) && status_code(oa) == 200) {
+        oa_data   <- content(oa, as = "parsed", type = "application/json")
+        citas_val <- as.numeric(oa_data$cited_by_count)
+        refs_val  <- as.numeric(length(oa_data$referenced_works))
+      }
+      Sys.sleep(0.3)
+    }
+
+    papers_df <- papers_df %>% add_row(
+      journal_name     = "Journal of Artificial Intelligence Research",
+      title            = ifelse(is.na(t), "Sin título", t),
+      publication_date = ifelse(is.na(d), NA_character_, d),
+      year             = as.numeric(substr(d, 1, 4)),
+      doi              = doi_val,
+      url              = link,
+      abstract         = abstr,
+      authors_raw      = paste(auths, collapse = ", "),
+      n_authors        = ifelse(length(auths) == 0, NA_real_, as.numeric(length(auths))),
+      citations        = citas_val,
+      n_references     = refs_val
+    )
+  }
+}
+```
+
+##### 2.3. Limpieza Basica del Texto Extraido
+
+##### 2.3. Limpieza Basica del Texto Extraido
+
+##### 2.3. Limpieza Basica del Texto Extraido
+
+##### 2.3. Limpieza Basica del Texto Extraido
+
+### 3. Clasificación temática:
+
+criterio usado para etiquetar machine learning, IA generativa,
+Estadística y OTROS.
+
+```{r clasificacion}
+papers_df <- papers_df %>%
+  mutate(
+    topic_label = case_when(
+      grepl("generative|LLM|diffusion|large language|GPT|foundation model", title, ignore.case = TRUE) ~ "IA Generativa",
+      grepl("learning|neural|reinforcement|classification|network", title, ignore.case = TRUE) ~ "Machine Learning",
+      grepl("bayesian|statistical|inference|probability|variance|theorem", title, ignore.case = TRUE) ~ "Estadística",
+      TRUE ~ "Otros"
+    ),
+    citation = paste0(
+      authors_raw, " (", year, "). ",
+      title, ". ",
+      journal_name, ". ",
+      ifelse(!is.na(doi), paste0("https://doi.org/", doi), url)
+    )
+  ) %>%
+  mutate(paper_id = row_number()) #adicionamos el ID de cada paper
+```
+
+#### 3.1. Visualización del dataframe resultado
+
+```{r}
+View(papers_df)
+```
+
+### 4. Construcción de la base SQLite: 
+
+creación de tablas, inserción de datos y validación básica.
+
+```{r}
+# Definir el nombre del archivo de la base de datos
+db_file <- "revista_q1_2025.sqlite"
+
+# Eliminar el archivo si ya existe de corridas anteriores para evitar duplicidad
+if(file.exists(db_file)) file.remove(db_file)
+
+# Conectar a SQLite
+con <- dbConnect(RSQLite::SQLite(), db_file)
+
+# Escribir la tabla principal requerida
+dbWriteTable(con, "papers", papers_df)
+
+# Validar que la tabla se haya creado correctamente
+dbListFields(con, "papers")
+```
+### 5. Consultas SQL y resultados:
+
+```{r}
+# 1. ¿Cual es el número promedio de autores por paper?
+dbGetQuery(con, "SELECT AVG(n_authors) AS Promedio_Autores FROM papers")
+
+# 2. ¿Cuantos artículos están relacionados con Machine Learning?
+dbGetQuery(con, "SELECT COUNT(*) AS Total_Machine_Learning FROM papers WHERE topic_label = 'Machine Learning'")
+
+# 3. ¿Cuantos artículos están relacionados con IA Generativa?
+dbGetQuery(con, "SELECT COUNT(*) AS Total_IA_Generativa FROM papers WHERE topic_label = 'IA Generativa'")
+
+# 4. ¿Cuantos artículos están relacionados con otros temas estadísticos?
+dbGetQuery(con, "SELECT COUNT(*) AS Total_Estadistica FROM papers WHERE topic_label = 'Estadística'")
+
+# 5. ¿Cual es el número total de referencias de los artículos publicados en 2025?
+dbGetQuery(con, "SELECT SUM(n_references) AS Total_Referencias FROM papers")
+
+# 6. ¿Cual es el número promedio de referencias por artículo?
+# Como explicaremos en limitaciones, este campo está NULL.
+dbGetQuery(con, "SELECT AVG(n_references) AS Promedio_Referencias FROM papers")
+
+# 7. ¿Cual es la referencia que más se repite entre todos los artículos?
+# (Consulta teórica, ya que no se extrajeron referencias individuales por limitaciones del DOM).
+dbGetQuery(con, "
+  SELECT 'No disponible (Revisar sección de Limitaciones)' AS Referencia_Mas_Repetida
+")
+
+# 8. ¿Cual es el promedio de citas por artículo?
+dbGetQuery(con, "SELECT AVG(citations) AS Promedio_Citas FROM papers")
+
+# 9. ¿Cual es el paper con más citas?
+dbGetQuery(con, "SELECT title, citations FROM papers ORDER BY citations DESC LIMIT 1")
+
+# 10. ¿Cual es el paper relacionado con machine learning, IA generativa o Estadística con más citas?
+dbGetQuery(con, "
+  SELECT title, topic_label, citations 
+  FROM papers 
+  WHERE topic_label IN ('Machine Learning', 'IA Generativa', 'Estadística') 
+  ORDER BY citations DESC LIMIT 1
+")
+
+# 11. ¿Cual es el paper relacionado con machine learning, IA generativa o Estadística con mayor numero de referencias?
+
+
+dbGetQuery(con, "
+  SELECT title, topic_label, n_references 
+  FROM papers 
+  WHERE topic_label IN ('Machine Learning', 'IA Generativa', 'Estadística') 
+  ORDER BY n_references DESC LIMIT 1
+")
+
+# Cierre de conexión para liberar memoria y evitar bloqueos en el archivo .sqlite
+dbDisconnect(con)
+```
+### 6. Hallazgos:
+
+resultados más relevantes.
+
+### 7. Limitaciones:
+
+datos faltantes, restricciones del sitio, problemas de scraping y
+métricas no disponibles.
+
+### 8. Conclusión:
+
+síntesis breve del ejercicio.

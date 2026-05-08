@@ -1752,33 +1752,80 @@ display: none;
 
 
 <!-- rnb-text-begin -->
-<p>This is an <a href="http://rmarkdown.rstudio.com">R Markdown</a>
-Notebook. When you execute code within the notebook, the results appear
-beneath the code.</p>
-<p>Try executing this chunk by clicking the <em>Run</em> button within
-the chunk or by placing your cursor inside it and pressing
-<em>Ctrl+Shift+Enter</em>.</p>
+<div id="ejercicio-1-diagnóstico-de-valores-faltantes" class="section level1">
+<h1>Ejercicio 1: Diagnóstico de Valores Faltantes</h1>
+<p>Dado el siguiente conjunto de datos simulado en R, responde las
+preguntas analíticas:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-output-begin eyJkYXRhIjoiXG48IS0tIHJuYi1zb3VyY2UtYmVnaW4gZXlKa1lYUmhJam9pWUdCZ2NseHVjR3h2ZENoallYSnpLVnh1WUdCZ0luMD0gLS0+XG5cbmBgYHJcbnBsb3QoY2FycylcbmBgYFxuXG48IS0tIHJuYi1zb3VyY2UtZW5kIC0tPlxuIn0= -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGxvdChjYXJzKVxuYGBgIn0= -->
-<pre class="r"><code>plot(cars)</code></pre>
+<!-- rnb-output-begin eyJkYXRhIjoiXG48IS0tIHJuYi1zb3VyY2UtYmVnaW4gZXlKa1lYUmhJam9pWUdCZ2NseHVjMlYwTG5ObFpXUW9ORElwWEc1dUlEd3RJREl3TUZ4dVpHRjBiM01nUEMwZ1pHRjBZUzVtY21GdFpTaGNiaUFnWldSaFpDQWdJQ0E5SUdNb2MyRnRjR3hsS0RFNE9qWTFMQ0F4TmpBcExDQnlaWEFvVGtFc0lEUXdLU2tzWEc0Z0lHbHVaM0psYzI4Z1BTQmpLSEp1YjNKdEtERXdNQ3dnTTJVMkxDQTFaVFVwTENCeVpYQW9Ua0VzSURFd01Da3BMRnh1SUNCamFYVmtZV1FnSUQwZ2MyRnRjR3hsS0dNb1hDSkNiMmR2ZE1PaFhDSXNYQ0pOWldSbGJHekRyVzVjSWl4Y0lrTmhiR2xjSWl3Z1RrRXBMQ0J1TENCeVpYQnNZV05sSUQwZ1ZGSlZSU3hjYmlBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNCd2NtOWlJRDBnWXlnd0xqUXNJREF1TXl3Z01DNHlMQ0F3TGpFcEtTeGNiaUFnWTI5dGNISmhJQ0E5SUhKaWFXNXZiU2h1TENBeExDQXdMalVwWEc0cFhHNWdZR0FpZlE9PSAtLT5cblxuYGBgclxuc2V0LnNlZWQoNDIpXG5uIDwtIDIwMFxuZGF0b3MgPC0gZGF0YS5mcmFtZShcbiAgZWRhZCAgICA9IGMoc2FtcGxlKDE4OjY1LCAxNjApLCByZXAoTkEsIDQwKSksXG4gIGluZ3Jlc28gPSBjKHJub3JtKDEwMCwgM2U2LCA1ZTUpLCByZXAoTkEsIDEwMCkpLFxuICBjaXVkYWQgID0gc2FtcGxlKGMoXCJCb2dvdMOhXCIsXCJNZWRlbGzDrW5cIixcIkNhbGlcIiwgTkEpLCBuLCByZXBsYWNlID0gVFJVRSxcbiAgICAgICAgICAgICAgICAgICBwcm9iID0gYygwLjQsIDAuMywgMC4yLCAwLjEpKSxcbiAgY29tcHJhICA9IHJiaW5vbShuLCAxLCAwLjUpXG4pXG5gYGBcblxuPCEtLSBybmItc291cmNlLWVuZCAtLT5cbiJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2V0LnNlZWQoNDIpXG5uIDwtIDIwMFxuZGF0b3MgPC0gZGF0YS5mcmFtZShcbiAgZWRhZCAgICA9IGMoc2FtcGxlKDE4OjY1LCAxNjApLCByZXAoTkEsIDQwKSksXG4gIGluZ3Jlc28gPSBjKHJub3JtKDEwMCwgM2U2LCA1ZTUpLCByZXAoTkEsIDEwMCkpLFxuICBjaXVkYWQgID0gc2FtcGxlKGMoXCJCb2dvdMOhXCIsXCJNZWRlbGzDrW5cIixcIkNhbGlcIiwgTkEpLCBuLCByZXBsYWNlID0gVFJVRSxcbiAgICAgICAgICAgICAgICAgICBwcm9iID0gYygwLjQsIDAuMywgMC4yLCAwLjEpKSxcbiAgY29tcHJhICA9IHJiaW5vbShuLCAxLCAwLjUpXG4pXG5gYGAifQ== -->
+<pre class="r"><code>set.seed(42)
+n &lt;- 200
+datos &lt;- data.frame(
+  edad    = c(sample(18:65, 160), rep(NA, 40)),
+  ingreso = c(rnorm(100, 3e6, 5e5), rep(NA, 100)),
+  ciudad  = sample(c(&quot;Bogotá&quot;,&quot;Medellín&quot;,&quot;Cali&quot;, NA), n, replace = TRUE,
+                   prob = c(0.4, 0.3, 0.2, 0.1)),
+  compra  = rbinom(n, 1, 0.5)
+)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Add a new chunk by clicking the <em>Insert Chunk</em> button on the
-toolbar or by pressing <em>Ctrl+Alt+I</em>.</p>
-<p>When you save the notebook, an HTML file containing the code and
-output will be saved alongside it (click the <em>Preview</em> button or
-press <em>Ctrl+Shift+K</em> to preview the HTML file).</p>
-<p>The preview shows you a rendered HTML copy of the contents of the
-editor. Consequently, unlike <em>Knit</em>, <em>Preview</em> does not
-run any R code chunks. Instead, the output of the chunk when it was last
-run in the editor is displayed.</p>
+<ol style="list-style-type: decimal">
+<li>Calcula el porcentaje de faltantes por variable con
+colMeans()is,na(datos)).</li>
+<li>¿Cuantes filas tienen al menos un NA? Usa
+sum(!complete.cases(datos)).</li>
+<li>Visualiza el patrón con naniar::gg_miss_var(datos) y visdat : :
+vis_miss(datos).</li>
+<li>Clasifica el mecanismo probable (MCAR, MAR o MNAR) para ingreso y
+edad. Justifica tu respuesta.</li>
+<li>Imputa edad con la mediana e ingreso con la media. ¿Cambia la
+distribución? Compara con summary() antes y despues.</li>
+</ol>
+</div>
+<div id="ejercicio-2-pipeline-reproducible-con-recipes" class="section level1">
+<h1>Ejercicio 2: Pipeline reproducible con recipes</h1>
+<p>Construye un pipeline de imputación correcto que evite fuga de
+información</p>
 <!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-output-begin eyJkYXRhIjoiXG48IS0tIHJuYi1zb3VyY2UtYmVnaW4gZXlKa1lYUmhJam9pWUdCZ2NseHViR2xpY21GeWVTaDBhV1I1Ylc5a1pXeHpLVnh1WEc0aklGTmxjR0Z5WVNCa1lYUnZjMXh1YzJWMExuTmxaV1FvTVRJektWeHVjM0JzYVhRZ1BDMGdhVzVwZEdsaGJGOXpjR3hwZENoa1lYUnZjeXdnY0hKdmNDQTlJREF1TnpVcFhHNTBjbUZwYmlBOExTQjBjbUZwYm1sdVp5aHpjR3hwZENsY2JuUmxjM1FnSUR3dElIUmxjM1JwYm1jb2MzQnNhWFFwWEc1Y2JpTWdWSFVnZEdGeVpXRTZJR052YlhCc1pYUmhJR1ZzSUhCcGNHVnNhVzVsWEc1eVpXTmxkR0VnUEMwZ2NtVmphWEJsS0dOdmJYQnlZU0IrSUM0c0lHUmhkR0VnUFNCMGNtRnBiaWtnZkQ1Y2JpQWdjM1JsY0Y5cGJYQjFkR1ZmYldWa2FXRnVLRjlmWHlrZ2ZENGdJQ0FqSUdsdGNIVjBZU0J1ZFczRHFYSnBZMkZ6WEc0Z0lITjBaWEJmYVcxd2RYUmxYMjF2WkdVb1gxOWZLU0FnZkQ0Z0lDQWdJeUJwYlhCMWRHRWdZMkYwWldmRHMzSnBZMkZ6WEc0Z0lIQnlaWEFvS1Z4dVhHNTBjbUZwYmw5d2NtOWpJRHd0SUdKaGEyVW9jbVZqWlhSaExDQnVaWGRmWkdGMFlTQTlJSFJ5WVdsdUtWeHVkR1Z6ZEY5d2NtOWpJQ0E4TFNCaVlXdGxLSEpsWTJWMFlTd2dibVYzWDJSaGRHRWdQU0IwWlhOMEtWeHVZR0JnSW4wPSAtLT5cblxuYGBgclxubGlicmFyeSh0aWR5bW9kZWxzKVxuXG4jIFNlcGFyYSBkYXRvc1xuc2V0LnNlZWQoMTIzKVxuc3BsaXQgPC0gaW5pdGlhbF9zcGxpdChkYXRvcywgcHJvcCA9IDAuNzUpXG50cmFpbiA8LSB0cmFpbmluZyhzcGxpdClcbnRlc3QgIDwtIHRlc3Rpbmcoc3BsaXQpXG5cbiMgVHUgdGFyZWE6IGNvbXBsZXRhIGVsIHBpcGVsaW5lXG5yZWNldGEgPC0gcmVjaXBlKGNvbXByYSB+IC4sIGRhdGEgPSB0cmFpbikgfD5cbiAgc3RlcF9pbXB1dGVfbWVkaWFuKF9fXykgfD4gICAjIGltcHV0YSBudW3DqXJpY2FzXG4gIHN0ZXBfaW1wdXRlX21vZGUoX19fKSAgfD4gICAgIyBpbXB1dGEgY2F0ZWfDs3JpY2FzXG4gIHByZXAoKVxuXG50cmFpbl9wcm9jIDwtIGJha2UocmVjZXRhLCBuZXdfZGF0YSA9IHRyYWluKVxudGVzdF9wcm9jICA8LSBiYWtlKHJlY2V0YSwgbmV3X2RhdGEgPSB0ZXN0KVxuYGBgXG5cbjwhLS0gcm5iLXNvdXJjZS1lbmQgLS0+XG4ifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5bW9kZWxzKVxuXG4jIFNlcGFyYSBkYXRvc1xuc2V0LnNlZWQoMTIzKVxuc3BsaXQgPC0gaW5pdGlhbF9zcGxpdChkYXRvcywgcHJvcCA9IDAuNzUpXG50cmFpbiA8LSB0cmFpbmluZyhzcGxpdClcbnRlc3QgIDwtIHRlc3Rpbmcoc3BsaXQpXG5cbiMgVHUgdGFyZWE6IGNvbXBsZXRhIGVsIHBpcGVsaW5lXG5yZWNldGEgPC0gcmVjaXBlKGNvbXByYSB+IC4sIGRhdGEgPSB0cmFpbikgfD5cbiAgc3RlcF9pbXB1dGVfbWVkaWFuKF9fXykgfD4gICAjIGltcHV0YSBudW3DqXJpY2FzXG4gIHN0ZXBfaW1wdXRlX21vZGUoX19fKSAgfD4gICAgIyBpbXB1dGEgY2F0ZWfDs3JpY2FzXG4gIHByZXAoKVxuXG50cmFpbl9wcm9jIDwtIGJha2UocmVjZXRhLCBuZXdfZGF0YSA9IHRyYWluKVxudGVzdF9wcm9jICA8LSBiYWtlKHJlY2V0YSwgbmV3X2RhdGEgPSB0ZXN0KVxuYGBgIn0= -->
+<pre class="r"><code>library(tidymodels)
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlRhbGxlciBWYWxvcmVzIEZhbHRhbnRlcyBlIEltcHV0YWNpb24iDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQpUaGlzIGlzIGFuIFtSIE1hcmtkb3duXShodHRwOi8vcm1hcmtkb3duLnJzdHVkaW8uY29tKSBOb3RlYm9vay4gV2hlbiB5b3UgZXhlY3V0ZSBjb2RlIHdpdGhpbiB0aGUgbm90ZWJvb2ssIHRoZSByZXN1bHRzIGFwcGVhciBiZW5lYXRoIHRoZSBjb2RlLiANCg0KVHJ5IGV4ZWN1dGluZyB0aGlzIGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqUnVuKiBidXR0b24gd2l0aGluIHRoZSBjaHVuayBvciBieSBwbGFjaW5nIHlvdXIgY3Vyc29yIGluc2lkZSBpdCBhbmQgcHJlc3NpbmcgKkN0cmwrU2hpZnQrRW50ZXIqLiANCg0KYGBge3J9DQpwbG90KGNhcnMpDQpgYGANCg0KQWRkIGEgbmV3IGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqSW5zZXJ0IENodW5rKiBidXR0b24gb24gdGhlIHRvb2xiYXIgb3IgYnkgcHJlc3NpbmcgKkN0cmwrQWx0K0kqLg0KDQpXaGVuIHlvdSBzYXZlIHRoZSBub3RlYm9vaywgYW4gSFRNTCBmaWxlIGNvbnRhaW5pbmcgdGhlIGNvZGUgYW5kIG91dHB1dCB3aWxsIGJlIHNhdmVkIGFsb25nc2lkZSBpdCAoY2xpY2sgdGhlICpQcmV2aWV3KiBidXR0b24gb3IgcHJlc3MgKkN0cmwrU2hpZnQrSyogdG8gcHJldmlldyB0aGUgSFRNTCBmaWxlKS4NCg0KVGhlIHByZXZpZXcgc2hvd3MgeW91IGEgcmVuZGVyZWQgSFRNTCBjb3B5IG9mIHRoZSBjb250ZW50cyBvZiB0aGUgZWRpdG9yLiBDb25zZXF1ZW50bHksIHVubGlrZSAqS25pdCosICpQcmV2aWV3KiBkb2VzIG5vdCBydW4gYW55IFIgY29kZSBjaHVua3MuIEluc3RlYWQsIHRoZSBvdXRwdXQgb2YgdGhlIGNodW5rIHdoZW4gaXQgd2FzIGxhc3QgcnVuIGluIHRoZSBlZGl0b3IgaXMgZGlzcGxheWVkLg0K</div>
+# Separa datos
+set.seed(123)
+split &lt;- initial_split(datos, prop = 0.75)
+train &lt;- training(split)
+test  &lt;- testing(split)
+
+# Tu tarea: completa el pipeline
+receta &lt;- recipe(compra ~ ., data = train) |&gt;
+  step_impute_median(___) |&gt;   # imputa numéricas
+  step_impute_mode(___)  |&gt;    # imputa categóricas
+  prep()
+
+train_proc &lt;- bake(receta, new_data = train)
+test_proc  &lt;- bake(receta, new_data = test)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol style="list-style-type: decimal">
+<li>Calcula el porcentaje de faltantes por variable con
+colMeans()is,na(datos)).</li>
+<li>¿Cuantes filas tienen al menos un NA? Usa
+sum(!complete.cases(datos)).</li>
+<li>Visualiza el patrón con naniar::gg_miss_var(datos) y visdat : :
+vis_miss(datos).</li>
+</ol>
+<!-- rnb-text-end -->
+</div>
+
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlRhbGxlciBWYWxvcmVzIEZhbHRhbnRlcyBlIEltcHV0YWNpb24iDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIEVqZXJjaWNpbyAxOiBEaWFnbsOzc3RpY28gZGUgVmFsb3JlcyBGYWx0YW50ZXMNCg0KRGFkbyBlbCBzaWd1aWVudGUgY29uanVudG8gZGUgZGF0b3Mgc2ltdWxhZG8gZW4gUiwgcmVzcG9uZGUgbGFzIHByZWd1bnRhcyBhbmFsw610aWNhczoNCg0KYGBge3J9DQpzZXQuc2VlZCg0MikNCm4gPC0gMjAwDQpkYXRvcyA8LSBkYXRhLmZyYW1lKA0KICBlZGFkICAgID0gYyhzYW1wbGUoMTg6NjUsIDE2MCksIHJlcChOQSwgNDApKSwNCiAgaW5ncmVzbyA9IGMocm5vcm0oMTAwLCAzZTYsIDVlNSksIHJlcChOQSwgMTAwKSksDQogIGNpdWRhZCAgPSBzYW1wbGUoYygiQm9nb3TDoSIsIk1lZGVsbMOtbiIsIkNhbGkiLCBOQSksIG4sIHJlcGxhY2UgPSBUUlVFLA0KICAgICAgICAgICAgICAgICAgIHByb2IgPSBjKDAuNCwgMC4zLCAwLjIsIDAuMSkpLA0KICBjb21wcmEgID0gcmJpbm9tKG4sIDEsIDAuNSkNCikNCmBgYA0KDQoxLiAgQ2FsY3VsYSBlbCBwb3JjZW50YWplIGRlIGZhbHRhbnRlcyBwb3IgdmFyaWFibGUgY29uIGNvbE1lYW5zKClpcyxuYShkYXRvcykpLg0KMi4gIMK/Q3VhbnRlcyBmaWxhcyB0aWVuZW4gYWwgbWVub3MgdW4gTkE/IFVzYSBzdW0oIWNvbXBsZXRlLmNhc2VzKGRhdG9zKSkuDQozLiAgVmlzdWFsaXphIGVsIHBhdHLDs24gY29uIG5hbmlhcjo6Z2dfbWlzc192YXIoZGF0b3MpIHkgdmlzZGF0IDogOiB2aXNfbWlzcyhkYXRvcykuDQo0LiAgQ2xhc2lmaWNhIGVsIG1lY2FuaXNtbyBwcm9iYWJsZSAoTUNBUiwgTUFSIG8gTU5BUikgcGFyYSBpbmdyZXNvIHkgZWRhZC4gSnVzdGlmaWNhIHR1IHJlc3B1ZXN0YS4NCjUuICBJbXB1dGEgZWRhZCBjb24gbGEgbWVkaWFuYSBlIGluZ3Jlc28gY29uIGxhIG1lZGlhLiDCv0NhbWJpYSBsYSBkaXN0cmlidWNpw7NuPyBDb21wYXJhIGNvbiBzdW1tYXJ5KCkgYW50ZXMgeSBkZXNwdWVzLg0KDQojIEVqZXJjaWNpbyAyOiBQaXBlbGluZSByZXByb2R1Y2libGUgY29uIHJlY2lwZXMNCg0KQ29uc3RydXllIHVuIHBpcGVsaW5lIGRlIGltcHV0YWNpw7NuIGNvcnJlY3RvIHF1ZSBldml0ZSBmdWdhIGRlIGluZm9ybWFjacOzbg0KDQpgYGB7cn0NCmxpYnJhcnkodGlkeW1vZGVscykNCg0KIyBTZXBhcmEgZGF0b3MNCnNldC5zZWVkKDEyMykNCnNwbGl0IDwtIGluaXRpYWxfc3BsaXQoZGF0b3MsIHByb3AgPSAwLjc1KQ0KdHJhaW4gPC0gdHJhaW5pbmcoc3BsaXQpDQp0ZXN0ICA8LSB0ZXN0aW5nKHNwbGl0KQ0KDQojIFR1IHRhcmVhOiBjb21wbGV0YSBlbCBwaXBlbGluZQ0KcmVjZXRhIDwtIHJlY2lwZShjb21wcmEgfiAuLCBkYXRhID0gdHJhaW4pIHw+DQogIHN0ZXBfaW1wdXRlX21lZGlhbihfX18pIHw+ICAgIyBpbXB1dGEgbnVtw6lyaWNhcw0KICBzdGVwX2ltcHV0ZV9tb2RlKF9fXykgIHw+ICAgICMgaW1wdXRhIGNhdGVnw7NyaWNhcw0KICBwcmVwKCkNCg0KdHJhaW5fcHJvYyA8LSBiYWtlKHJlY2V0YSwgbmV3X2RhdGEgPSB0cmFpbikNCnRlc3RfcHJvYyAgPC0gYmFrZShyZWNldGEsIG5ld19kYXRhID0gdGVzdCkNCmBgYA0KDQoxLiAgQ2FsY3VsYSBlbCBwb3JjZW50YWplIGRlIGZhbHRhbnRlcyBwb3IgdmFyaWFibGUgY29uIGNvbE1lYW5zKClpcyxuYShkYXRvcykpLg0KMi4gIMK/Q3VhbnRlcyBmaWxhcyB0aWVuZW4gYWwgbWVub3MgdW4gTkE/IFVzYSBzdW0oIWNvbXBsZXRlLmNhc2VzKGRhdG9zKSkuDQozLiAgVmlzdWFsaXphIGVsIHBhdHLDs24gY29uIG5hbmlhcjo6Z2dfbWlzc192YXIoZGF0b3MpIHkgdmlzZGF0IDogOiB2aXNfbWlzcyhkYXRvcykuDQo=</div>
 
 
 
